@@ -94,35 +94,62 @@ export default function CreateRolePage() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const handlePermissionToggle = (module: string, perm: string) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [module]: prev[module].includes(perm)
-        ? prev[module].filter((p) => p !== perm)
-        : [...prev[module], perm],
-    }));
+    setPermissions((prev) => {
+      const current = prev[module] ?? []; 
+  
+      const next = current.includes(perm)
+        ? current.filter((p) => p !== perm)
+        : [...current, perm];
+  
+      const updated = { ...prev, [module]: next };
+  
+      // console.log("[toggle]", { module, perm, updated }); 
+      return updated;
+    });
   };
 
   const handleSelectAllForModule = (module: string, checked: boolean) => {
-    if (checked) {
-      setPermissions((prev) => ({
-        ...prev,
-        [module]: modules.find((m) => m.name === module)!.permissions,
-      }));
-    } else {
-      setPermissions((prev) => ({ ...prev, [module]: [] }));
-    }
+    const perms = modules.find((m) => m.name === module)?.permissions ?? [];
+
+    setPermissions((prev) => {
+      const updated = { ...prev, [module]: checked ? [...perms] : [] };
+      // console.log("[select-all-module]", { module, checked, updated }); 
+      return updated;
+    });
   };
 
   const handleSelectAll = () => {
-    if (!isAdmin) {
-      const allPerms = Object.fromEntries(
-        modules.map((m) => [m.name, m.permissions]),
-      );
-      setPermissions(allPerms);
-    }
+    setPermissions((prev) => {
+      const isAllSelected = modules.every((m) => {
+        const current = prev[m.name] ?? [];
+        return current.length === m.permissions.length;
+      });
+  
+      const updated = isAllSelected
+        ? Object.fromEntries(modules.map((m) => [m.name, []]))
+        : Object.fromEntries(modules.map((m) => [m.name, m.permissions]));
+  
+      // console.log("[select-all-toggle]", { isAllSelected, updated }); 
+      return updated;
+    });
   };
 
   const handleSave = () => {
+    const payload = {
+      roleName,
+      isAdmin,
+      permissions, // ✅ checked data အကုန် (module -> string[])
+    };
+  
+    console.log("[SAVE payload]", payload);
+  
+    // TODO: backend call example
+    // await fetch("/api/roles", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(payload),
+    // });
+  
     toast.success("Role Created Successfully", {
       description: `${roleName} has been created with selected permissions.`,
     });
@@ -162,7 +189,7 @@ export default function CreateRolePage() {
 
           {/* Permissions Card */}
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-6 border-b">
+            <div className=" from-primary/5 to-primary/10 p-6 border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">Role Permissions</h2>
@@ -206,12 +233,14 @@ export default function CreateRolePage() {
                       </Label>
                     </div>
 
+
+                    {/* permission check */}
                     <div className="ml-8 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
                       {module.permissions.map((perm) => (
                         <div key={perm} className="flex items-center space-x-2">
                           <Checkbox
                             id={`${module.name}-${perm}`}
-                            checked={modulePerms.includes(perm)}
+                            checked={modulePerms.some((p) => p === perm)}
                             onCheckedChange={() =>
                               handlePermissionToggle(module.name, perm)
                             }
@@ -220,7 +249,7 @@ export default function CreateRolePage() {
                             htmlFor={`${module.name}-${perm}`}
                             className={cn(
                               "cursor-pointer text-sm font-medium",
-                              modulePerms.includes(perm) &&
+                              modulePerms.some((p) => p === perm) &&
                                 "text-primary font-semibold",
                             )}
                           >

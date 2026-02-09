@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
@@ -15,7 +16,6 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -48,6 +48,7 @@ const menuItems: MenuItem[] = [
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['Products']);
+  const pathname = usePathname();
 
   const toggleMenu = (label: string) => {
     if (collapsed) return;
@@ -56,20 +57,20 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     );
   };
 
-  const isActive = (path?: string) => path && location.pathname === path;
+  const isActive = (path?: string) => path && pathname === path;
   const isChildActive = (children?: { label: string; path: string }[]) =>
-    children?.some((child) => location.pathname === child.path);
+    children?.some((child) => pathname === child.path);
 
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-border/60 bg-gradient-to-b from-background to-background/95 transition-all duration-300 ease-in-out',
+        'fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-border/60 from-background to-background/95 transition-all duration-300 ease-in-out',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header / Logo */}
       <div className="flex h-16 items-center border-b border-border/40 px-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl    from-indigo-500 to-purple-600 text-white shadow-md">
           <span className="font-bold tracking-tight">D</span>
         </div>
         {!collapsed && (
