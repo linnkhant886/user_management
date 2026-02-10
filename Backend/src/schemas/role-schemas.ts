@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Role Create / Update
 export const roleSchema = z.object({
   name: z
     .string()

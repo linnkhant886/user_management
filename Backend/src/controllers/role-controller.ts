@@ -26,7 +26,6 @@ export const createRole = async (req: Request, res: Response) => {
         data: { name },
       });
 
-      // permissions မပါရင် role ပဲ return
       if (!permissions || Object.keys(permissions).length === 0) {
         return role;
       }

@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { createRole } from "@/lib/api";
 // import { useToast } from '@/components/ui/use-toast';
 
 const modules = [
@@ -91,7 +91,7 @@ const modules = [
 export default function CreateRolePage() {
   const [roleName, setRoleName] = useState("");
   const [permissions, setPermissions] = useState<Record<string, string[]>>({});
-  const [isAdmin, setIsAdmin] = useState(false);
+
 
   const handlePermissionToggle = (module: string, perm: string) => {
     setPermissions((prev) => {
@@ -134,26 +134,27 @@ export default function CreateRolePage() {
     });
   };
 
-  const handleSave = () => {
-    const payload = {
-      roleName,
-      isAdmin,
-      permissions, // ✅ checked data အကုန် (module -> string[])
-    };
-  
+  const handleSave = async () => {
+  try {
+    const payload = { name: roleName, permissions };
     console.log("[SAVE payload]", payload);
-  
-    // TODO: backend call example
-    // await fetch("/api/roles", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(payload),
-    // });
-  
+
+    await createRole(payload);
+
     toast.success("Role Created Successfully", {
       description: `${roleName} has been created with selected permissions.`,
     });
-  };
+
+    setRoleName("");
+    setPermissions({});
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      toast.error("Create role failed", { description: e.message });
+    } else {
+      toast.error("Create role failed", { description: "Unknown error" });
+    }
+  }
+};
 
   return (
     <>
